@@ -40,6 +40,10 @@ public abstract class Vehiculo {
         this.disponible = disponible;
     }
 
+    public abstract String getTipo();
+
+    public abstract int getPrecioBase();
+
     @Override 
     public String toString() {
         return new JSONObject(this).toString();
