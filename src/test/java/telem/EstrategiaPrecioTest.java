@@ -15,40 +15,40 @@ public class EstrategiaPrecioTest {
 
     // ---------- Cada política por separado (precio base 50) ----------
 
-    
+    @Test
     public void politicaNormal() {
         CalculadorPrecio p = new PrecioNormal();
         assertEquals(500, p.calcularPrecio(50, 10)); // 50 x 10
         assertEquals(50, p.calcularPrecio(50, 1));
     }
 
-    
+    @Test
     public void politicaTemporadaAltaDuplicaElPrecioBase() {
         CalculadorPrecio p = new PrecioTemporadaAlta();
         assertEquals(1000, p.calcularPrecio(50, 10)); // 100 x 10
     }
 
-    
+    @Test
     public void ofertonHastaSieteDiasSoloLleva30PorCiento() {
         CalculadorPrecio p = new PrecioOferton();
         assertEquals(245, p.calcularPrecio(50, 7)); // 35 x 7 (justo 7: sin el 10 % extra)
     }
 
-    
+    @Test
     public void ofertonMasDeSieteDiasLlevaUn10PorCientoExtra() {
         CalculadorPrecio p = new PrecioOferton();
         assertEquals(252, p.calcularPrecio(50, 8));  // 35 x 8 = 280 -> x 0,9 = 252
         assertEquals(315, p.calcularPrecio(50, 10)); // 35 x 10 = 350 -> x 0,9 = 315
     }
 
-    
+    @Test
     public void clienteFrecuenteHastaTresDiasSoloLleva20PorCiento() {
         CalculadorPrecio p = new PrecioClienteFrecuente();
         assertEquals(40, p.calcularPrecio(50, 1));   // 40 x 1
         assertEquals(120, p.calcularPrecio(50, 3));  // 40 x 3
     }
 
-    
+    @Test
     public void clienteFrecuenteDesdeElCuartoDiaLleva40PorCiento() {
         CalculadorPrecio p = new PrecioClienteFrecuente();
         assertEquals(150, p.calcularPrecio(50, 4));  // 40 x 3 + 30 x 1
@@ -61,13 +61,13 @@ public class EstrategiaPrecioTest {
     private final LocalDate inicio = LocalDate.of(2026, 11, 1);
     private final LocalDate fin = LocalDate.of(2026, 11, 10); // 10 días
 
-    
+    @Test
     public void porDefectoAlquilerUsaLaPoliticaNormal() {
         Alquiler a = new Alquiler(new Turismo("A", Categoria.NORMAL, 2020, 5, 400.0), cliente, inicio, fin);
         assertEquals(500, a.calcularPrecioAlquiler());
     }
 
-    
+    @Test
     public void alquilerUsaLaEstrategiaQueSeLeAsigna() {
         Alquiler a = new Alquiler(new Turismo("A", Categoria.NORMAL, 2020, 5, 400.0), cliente, inicio, fin);
         a.setCalculador(new PrecioTemporadaAlta());
@@ -78,7 +78,7 @@ public class EstrategiaPrecioTest {
         assertEquals(330, a.calcularPrecioAlquiler());
     }
 
-    
+    @Test
     public void laEstrategiaUsaElPrecioBaseDelVehiculo() {
         // Motocicleta SUPERIOR: precio base 70 -> normal 70 x 10 = 700
         Alquiler a = new Alquiler(new Motocicleta("B", Categoria.SUPERIOR, 2020, 600), cliente, inicio, fin);
@@ -87,7 +87,7 @@ public class EstrategiaPrecioTest {
         assertEquals(441, a.calcularPrecioAlquiler());
     }
 
-    
+    @Test
     public void calcularDiasCuentaInicioYFin() {
         assertEquals(10, Alquiler.calcularDias(inicio, fin));
         assertEquals(1, Alquiler.calcularDias(inicio, inicio));
