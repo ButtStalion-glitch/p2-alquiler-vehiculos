@@ -19,7 +19,19 @@ public abstract class Vehiculo {
         this.categoria = categoria;
         this.annio = annio;
     }
-
+     /**
+     * Ejercicio 3: constructor para deserializar los atributos comunes desde el JSON.
+     * Lo llaman las subclases con super(jsonString).
+     * @param jsonString el JSON que produce toString().
+     */
+    public Vehiculo(String jsonString) {
+        JSONObject json = new JSONObject(jsonString);
+        this.matricula = json.getString("matricula");
+        this.categoria = Categoria.valueOf(json.getString("categoria")); // "NORMAL" -> Categoria.NORMAL
+        this.annio = json.getInt("annio");
+        this.disponible = json.getBoolean("disponible");
+    }
+    
     public String getMatricula() {
         return matricula;
     }

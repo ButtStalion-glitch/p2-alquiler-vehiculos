@@ -1,6 +1,9 @@
 package telem;
 
+  import org.json.JSONObject;
+
 public class Turismo extends Vehiculo {
+
 
     int plazas;
     double capacidadMaletero;
@@ -12,7 +15,15 @@ public class Turismo extends Vehiculo {
         this.plazas = plazas;
         this.capacidadMaletero = capacidadMaletero;
     }
-
+        /**
+     * Ejercicio 3: constructor para deserializar un turismo desde su JSON.
+     */
+    public Turismo(String jsonString) {
+        super(jsonString);                                         // atributos comunes (Vehiculo)
+        JSONObject json = new JSONObject(jsonString);
+        this.plazas = json.getInt("plazas");                       // atributos propios
+        this.capacidadMaletero = json.getDouble("capacidadMaletero");
+    }
     public int getPlazas() {
         return plazas;
     }

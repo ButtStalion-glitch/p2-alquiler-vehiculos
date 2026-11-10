@@ -16,6 +16,16 @@ public class Cliente {
         this.dni = dni;
     }
 
+        /**
+     * Ejercicio 3: constructor para deserializar un cliente desde su JSON.
+     * @param jsonString el JSON que produce toString(), p. ej. {"nombre":"...","dni":"..."}
+     */
+    public Cliente(String jsonString) {
+        JSONObject json = new JSONObject(jsonString);
+        this.nombre = json.getString("nombre");
+        this.dni = json.getString("dni");
+    }
+
     public String getNombre() {
         return nombre;
     }
@@ -33,5 +43,5 @@ public class Cliente {
         Cliente cliente = new Cliente("Juan Pérez", "12345678A");
         System.out.println(cliente.toString());
     }
-
+    
 }

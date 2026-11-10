@@ -34,6 +34,17 @@ public class Alquiler {
     public static Alquiler[] obtenerAlquileres() {
         return alquileres;
     }
+    
+     public Alquiler(String jsonString) {
+        JSONObject json = new JSONObject(jsonString);
+        // Objetos anidados: se saca su JSON y se reconstruyen
+        this.cliente = new Cliente(json.getJSONObject("cliente").toString());
+        // El vehículo puede ser de cualquier subclase: decide la factoría
+        this.vehiculo = FactoriaVehiculos.getVehiculo(json.getJSONObject("vehiculo").toString());
+        // LocalDate se guardó como "2026-11-08": parse() lo convierte de nuevo en fecha
+        this.fechaInicio = LocalDate.parse(json.getString("fechaInicio"));
+        this.fechaFin = LocalDate.parse(json.getString("fechaFin"));
+    }
 
     public static void agregarAlquiler(Alquiler alquiler) {
         if (contadorAlquileres < alquileres.length) {

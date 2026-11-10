@@ -14,6 +14,16 @@ public class VehiculoIndustrial extends Vehiculo {
         this.capacidadCarga = capacidadCarga;
         this.numeroEjes = numeroEjes;
     }
+    
+        /**
+     * Ejercicio 3: constructor para deserializar un vehículo industrial desde su JSON.
+     */
+    public VehiculoIndustrial(String jsonString) {
+        super(jsonString);                                     // atributos comunes (Vehiculo)
+        JSONObject json = new JSONObject(jsonString);
+        this.capacidadCarga = json.getInt("capacidadCarga");   // atributos propios
+        this.numeroEjes = json.getInt("numeroEjes");
+    }
 
     public int getCapacidadCarga() {
         return capacidadCarga;
