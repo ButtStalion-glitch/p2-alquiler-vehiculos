@@ -75,7 +75,7 @@ public class Alquiler {
         Vehiculo vehiculo1 = new Turismo("ABC123", Categoria.NORMAL, 2020, 5, 400.0);
         Cliente cliente1 = new Cliente("Juan Pérez", "123456789");
         LocalDate hoy=LocalDate.now();
-        Alquiler alquiler1 = new Alquiler(vehiculo1, cliente1, hoy, hoy.plusDays(System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000)); // Alquiler de 3 días
+        Alquiler alquiler1 = new Alquiler(vehiculo1, cliente1, hoy, hoy.plusDays(3)); // Alquiler de 3 días
         
         System.out.println(alquiler1.toString());
         System.out.println("--------------------------------------------------------");
