@@ -3,8 +3,6 @@ package telem;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-import java.util.Date;
-
 import org.json.JSONObject;
 
 /**
@@ -56,12 +54,13 @@ public class Alquiler {
         return fechaInicio;
     }
 
-    public LocalDate getFechaFin() {
+       public LocalDate getFechaFin() {
         return fechaFin;
     }
 
-    public int calcularPrecioAlquiler(Date fechaInicio, Date fechaFin) {
-        int dias = (int) ((fechaFin.getTime() - fechaInicio.getTime()) / (1000 * 60 * 60 * 24));
+    public int calcularPrecioAlquiler(LocalDate fechaInicio, LocalDate fechaFin) {
+        // +1 para incluir el día de inicio
+        int dias = (int) ChronoUnit.DAYS.between(fechaInicio, fechaFin) + 1;
         return dias * PRECIO_BASE;
     }
 
