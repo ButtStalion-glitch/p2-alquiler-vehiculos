@@ -1,6 +1,13 @@
 package telem;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDate;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class GestorAlquileres {
     
@@ -129,6 +136,129 @@ public class GestorAlquileres {
         return false; 
     }
 
+    //Nuevo (EJERCICIO 5 )
+    /////////////////////////////////////////////////////////////////////////////////////
+    // PERSISTENCIA EN FICHERO (JSON)
+
+    //Getter de clientes: lo necesitan las pruebas para comprobar el estado
+    public Cliente[] obtenerClientes() {
+     return clientes;
+     }
+ 
+    //Getter de todos los vehículos
+    public Vehiculo[] obtenerVehiculos() {
+     return vehiculos;
+     }
+    
+
+    ////----------------------(1) --------------------------//// Guardar
+    /**
+    * Guarda clientes, vehículos y alquileres en un fichero de texto en formato JSON.
+    * Estructura: {"clientes":[...], "vehiculos":[...], "alquileres":[...]}
+    */
+    public void guardarEnFichero(String ruta) throws IOException {
+    // Un JSONArray por colección. toString() de cada objeto ya devuelve su JSON;
+    // se convierte a JSONObject para que quede anidado como objeto y no como texto
+
+     JSONArray jsonClientes = new JSONArray();
+     for (Cliente c : clientes) {
+        if (c != null) {                                        // recorre el array si tiene huecos null para que estos no aparezcan el c.toString()
+            jsonClientes.put(new JSONObject(c.toString()));              // Convierte el String en un objeto JSON 
+        }
+     }
+
+     JSONArray jsonVehiculos = new JSONArray();
+     for (Vehiculo v : vehiculos) {                               // elige la subclase según el campo "tipo"
+        if (v != null) {                                         // recorre el array si tiene huecos null para que estos no aparezcan el v.toString()
+            jsonVehiculos.put(new JSONObject(v.toString()));             // Convierte el String en un objeto JSON
+        }
+     }
+
+     JSONArray jsonAlquileres = new JSONArray();
+     for (int i = 0; i < contadorAlquileres; i++) {                       // solo posiciones ocupadas no hasta alquileres.length
+        jsonAlquileres.put(new JSONObject(alquileres[i].toString()));
+     }
+
+     // raiz agrupa las tres colecciones
+     JSONObject raiz = new JSONObject();
+     raiz.put("clientes", jsonClientes);
+     raiz.put("vehiculos", jsonVehiculos);
+     raiz.put("alquileres", jsonAlquileres);
+	
+     // Se crea el fichero y se escribe. finally que garantiza que close() se ejecute
+     // siempre, haya o no excepción, para no dejar el fichero abierto.
+     FileWriter escritor = new FileWriter(ruta);
+     try {
+        escritor.write(raiz.toString(2));        // genera el JSON como texto indentando 2 espacios 
+     } finally {
+        escritor.close();             //siempre se ejecuta para no quedar bloqueado
+     }
+    
+     }
+
+     ////----------------------(2) --------------------------//// Cargar
+    /**
+    * Sustituye los datos del gestor por los del fichero.
+    * Si el fichero es inválido se lanza excepción y el estado actual NO se modifica.
+    */
+    public void cargarDeFichero(String ruta) throws IOException {
+
+     // 1 Leer todo el fichero en un String.
+    StringBuilder texto = new StringBuilder();
+     BufferedReader lector = new BufferedReader(new FileReader(ruta));   //abre fichero para leer(por lineas) los caracteres
+     try {
+        String linea;
+        while ((linea = lector.readLine()) != null) {    //lee linea y la guarda en linea. readLine() = null cuando llega  al final
+            texto.append(linea).append("\n");            //añade linea(con un salto de linea) 
+        }
+     } finally {
+        lector.close();    //cierro fichero
+     }
+
+     // 2 Si no es JSON válido, JSONObject lanza JSONException (RuntimeException).
+     // Convierte texto leido en ficheros en JSON manejables
+     JSONObject raiz = new JSONObject(texto.toString());
+     //clientes , vehiculos , alquiler se usaron raiz.put en guardarEnnFichero
+     JSONArray jsonClientes = raiz.getJSONArray("clientes");
+     JSONArray jsonVehiculos = raiz.getJSONArray("vehiculos");
+     JSONArray jsonAlquileres = raiz.getJSONArray("alquileres");
+
+     // 3 Comprobar que caben en los arrays de tamaño fijo del gestor.
+     if (jsonClientes.length() > clientes.length) {                          // Si el fichero tiene mas elementos de los que caben = Excepcion
+        throw new IllegalArgumentException("Hay demasiados clientes en el fichero");
+     }
+     if (jsonVehiculos.length() > vehiculos.length) {
+        throw new IllegalArgumentException("Hay demasiados vehículos en el fichero");
+     }
+     if (jsonAlquileres.length() > alquileres.length) {
+        throw new IllegalArgumentException("Hay demasiados alquileres en el fichero");
+     }
+    
+     // 4 Reconstruir en arrays TEMPORALES/NUEVOS (para punto 5) 
+     Cliente[] nuevosClientes = new Cliente[clientes.length];   // Nuevo array con tamaño igual que el del gestor                       
+     for (int i = 0; i < jsonClientes.length(); i++) {                              
+        nuevosClientes[i] = new Cliente(jsonClientes.getJSONObject(i).toString());   //Constructor de deseralizacion(Ejercicio 3) lee dni y nombre y construye cliente
+     }
+     Vehiculo[] nuevosVehiculos = new Vehiculo[vehiculos.length];    // No hago "new Vehiculo" porque no sabe de que subclase es cada uno. De eso se encarga FactoriaVehiculos.getVehiculo 
+     for (int i = 0; i < jsonVehiculos.length(); i++) {
+        // Patrón Método Factoría : elige la subclase según el campo "tipo"
+        nuevosVehiculos[i] = FactoriaVehiculos.getVehiculo(jsonVehiculos.getJSONObject(i).toString());
+     }
+     Alquiler[] nuevosAlquileres = new Alquiler[alquileres.length];  //Igual que cliente pero con alquiler
+     for (int i = 0; i < jsonAlquileres.length(); i++) {
+        nuevosAlquileres[i] = new Alquiler(jsonAlquileres.getJSONObject(i).toString());
+     }
+
+     // 5 Paso 4 funciona. Se apuntan los atributos de los nuevos arrays
+     this.clientes = nuevosClientes;
+     this.vehiculos = nuevosVehiculos;
+     this.alquileres = nuevosAlquileres;
+     this.contadorAlquileres = jsonAlquileres.length();
+}
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    /// //Nuevo (EJERCICIO 5 )
+
 
     /////////////////////////////////////////////////////////////////////////////////////
     // INTERFAZ DE USUARIO (CONSOLA) Y LÓGICA DE NEGOCIO
@@ -162,6 +292,9 @@ public class GestorAlquileres {
                 System.out.println("(1) seleccionar coche para alquilar");
                 System.out.println("(2) entregar un coche alquilado");
                 System.out.println("(3) listar su histórico de alquileres");
+                //AMPLIACION DE LA INTERFAZ USUARIO PARA GUARDAR Y CARGAR DATOS EN FICHERO (EJERCICIO 5)
+                System.out.println("(4) guardar datos en fichero");      // nuevo EJERCICIO5
+                System.out.println("(5) cargar datos desde fichero");    // nuevo EJERCICIO5
 
                 int opcion = KeyBoard.readInt();
                 System.out.println("opción escogida: " + opcion);
@@ -219,8 +352,34 @@ public class GestorAlquileres {
                         for (Alquiler q: alqs){
                             System.out.print(q);
                         }
-                    default:
                         break;
+                        //AMPLIACION DE LA INTERFAZ USUARIO PARA GUARDAR Y CARGAR DATOS EN FICHERO (EJERCICIO 5)
+                    case 4:                                                  // nuevo
+                        System.out.println("Nombre del fichero:");
+                        String rutaGuardar = KeyBoard.readString();
+                        try {
+                            guardarEnFichero(rutaGuardar);
+                            System.out.println("Datos guardados en " + rutaGuardar);
+                        } catch (IOException e) {
+                            System.out.println("Error al guardar: " + e.getMessage());
+                        }
+                        break;
+                    case 5:                                                  // nuevo
+                        System.out.println("Nombre del fichero:");
+                        String rutaCargar = KeyBoard.readString();
+                        try {
+                            cargarDeFichero(rutaCargar);
+                            System.out.println("Datos cargados desde " + rutaCargar);
+                        } catch (IOException e) {
+                        System.out.println("Error al leer el fichero: " + e.getMessage());
+                        } catch (RuntimeException e) {
+                       // JSONException e IllegalArgumentException (contenido inválido)
+                        System.out.println("Fichero con contenido inválido: " + e.getMessage());
+                       }
+                    break;
+            default:
+                    System.out.println("Opción no válida.");
+                    break;
                 }
             }
             else{
